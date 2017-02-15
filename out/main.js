@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var Greeter = (function () {
     function Greeter(element) {
         this.element = element;
@@ -20,7 +25,7 @@ window.onload = function () {
     var greeter = new Greeter(el);
     greeter.start();
     var canvas = document.getElementById("myCanvas");
-    //var context=canvas.getContext("2d");
+    var context = canvas.getContext("2d");
     //context.fillStyle="#FF0000";
     //context.fillRect(0,0,250,75);
     /*var grd=context.createLinearGradient(0,0,175,50);
@@ -41,11 +46,53 @@ window.onload = function () {
     circle.arc(70,18,15,0,Math.PI*2,true);
     circle.closePath();
     circle.fill();*/
-    var cxt = canvas.getContext("2d");
-    var img = new Image();
-    img.src = "flower.png";
-    cxt.drawImage(img, 0, 0);
-    img.onload = function () {
+    var stage = new DisplayObjectContainer();
+    setInterval(function () {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        stage.draw(context);
+    }, 50);
+    var image = document.createElement("img");
+    image.src = "mark.png";
+    var bitmap = new Bitmap();
+    bitmap.image = image;
+    bitmap.y = 0;
+    //context.drawImage(img,0,0);
+    image.onload = function () {
+        stage.addChild(bitmap);
     };
 };
+var DisplayObjectContainer = (function () {
+    function DisplayObjectContainer() {
+        this.array = [];
+    }
+    DisplayObjectContainer.prototype.addChild = function (displayObject) {
+        this.array.push(displayObject);
+    };
+    DisplayObjectContainer.prototype.draw = function (context2D) {
+        for (var _i = 0, _a = this.array; _i < _a.length; _i++) {
+            var drawable = _a[_i];
+            drawable.draw(context2D);
+        }
+    };
+    return DisplayObjectContainer;
+}());
+var DisplayObject = (function () {
+    function DisplayObject() {
+        this.x = 0;
+        this.y = 0;
+    }
+    DisplayObject.prototype.draw = function (context2D) {
+    };
+    return DisplayObject;
+}());
+var Bitmap = (function (_super) {
+    __extends(Bitmap, _super);
+    function Bitmap() {
+        _super.apply(this, arguments);
+    }
+    Bitmap.prototype.draw = function (context2D) {
+        context2D.drawImage(this.image, this.x, this.y);
+    };
+    return Bitmap;
+}(DisplayObject));
 //# sourceMappingURL=main.js.map

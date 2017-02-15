@@ -27,7 +27,7 @@ window.onload = () => {
     greeter.start();
 
     var canvas=document.getElementById("myCanvas") as HTMLCanvasElement;
-    //var context=canvas.getContext("2d");
+    var context=canvas.getContext("2d");
     //context.fillStyle="#FF0000";
     //context.fillRect(0,0,250,75);
     /*var grd=context.createLinearGradient(0,0,175,50);
@@ -49,12 +49,56 @@ window.onload = () => {
     circle.closePath();
     circle.fill();*/
     
-    var cxt=canvas.getContext("2d");
-    var img=new Image()
-    img.src="flower.png"
-    cxt.drawImage(img,0,0);
-    img.onload = () => {
-        
+    var stage = new DisplayObjectContainer();
+    setInterval(() => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        stage.draw(context);
+    }, 50)
+
+    var image = document.createElement("img");
+    image.src="mark.png"
+    var bitmap = new Bitmap();
+    bitmap.image = image;
+    bitmap.y=0;
+    //context.drawImage(img,0,0);
+
+    image.onload = () => {
+        stage.addChild(bitmap);
+
+    }
+};
+
+interface Drawable {
+    draw(context2D: CanvasRenderingContext2D);
+}
+
+class DisplayObjectContainer implements Drawable {
+    array: Drawable[] = [];
+
+    addChild(displayObject: DisplayObject) {
+        this.array.push(displayObject);
     }
 
-};
+    draw(context2D: CanvasRenderingContext2D) {
+        for (let drawable of this.array) {
+            drawable.draw(context2D);
+        }
+    }
+}
+
+class DisplayObject implements Drawable {
+    x: number = 0;
+    y: number = 0;
+
+    draw(context2D: CanvasRenderingContext2D) {
+    }
+}
+
+class Bitmap extends DisplayObject {
+    image: HTMLImageElement;
+
+    draw(context2D: CanvasRenderingContext2D) {
+        context2D.drawImage(this.image, this.x, this.y);
+    }
+}
+
