@@ -62,9 +62,14 @@ window.onload = () => {
     bitmap.y=0;
     //context.drawImage(img,0,0);
 
+    var text1 = new TextField();
+    text1.text = "hello!";
+    text1.x = 100;
+    text1.y = 50;
+
     image.onload = () => {
         stage.addChild(bitmap);
-
+        stage.addChild(text1);
     }
 };
 
@@ -99,6 +104,18 @@ class Bitmap extends DisplayObject {
 
     draw(context2D: CanvasRenderingContext2D) {
         context2D.drawImage(this.image, this.x, this.y);
+    }
+}
+
+class TextField extends DisplayObject {
+
+    text : string = "";
+    size : number = 0;
+    color : string = "";
+
+    draw(context2D: CanvasRenderingContext2D) {
+        context2D.fillStyle = this.color;
+        context2D.fillText(this.text, this.x, this.y);
     }
 }
 

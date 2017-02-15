@@ -57,8 +57,13 @@ window.onload = function () {
     bitmap.image = image;
     bitmap.y = 0;
     //context.drawImage(img,0,0);
+    var text1 = new TextField();
+    text1.text = "hello!";
+    text1.x = 100;
+    text1.y = 50;
     image.onload = function () {
         stage.addChild(bitmap);
+        stage.addChild(text1);
     };
 };
 var DisplayObjectContainer = (function () {
@@ -94,5 +99,19 @@ var Bitmap = (function (_super) {
         context2D.drawImage(this.image, this.x, this.y);
     };
     return Bitmap;
+}(DisplayObject));
+var TextField = (function (_super) {
+    __extends(TextField, _super);
+    function TextField() {
+        _super.apply(this, arguments);
+        this.text = "";
+        this.size = 0;
+        this.color = "";
+    }
+    TextField.prototype.draw = function (context2D) {
+        context2D.fillStyle = this.color;
+        context2D.fillText(this.text, this.x, this.y);
+    };
+    return TextField;
 }(DisplayObject));
 //# sourceMappingURL=main.js.map
