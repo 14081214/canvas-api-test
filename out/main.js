@@ -56,11 +56,11 @@ window.onload = function () {
     var bitmap = new Bitmap();
     bitmap.image = image;
     bitmap.y = 0;
-    //context.drawImage(img,0,0);
     var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 100;
     text1.y = 50;
+    text1.size = 30;
     image.onload = function () {
         stage.addChild(bitmap);
         stage.addChild(text1);
@@ -109,6 +109,7 @@ var TextField = (function (_super) {
         this.color = "";
     }
     TextField.prototype.draw = function (context2D) {
+        context2D.font = this.size + "px" + " " + this.font;
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     };

@@ -50,6 +50,7 @@ window.onload = () => {
     circle.fill();*/
     
     var stage = new DisplayObjectContainer();
+    
     setInterval(() => {
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
@@ -60,12 +61,12 @@ window.onload = () => {
     var bitmap = new Bitmap();
     bitmap.image = image;
     bitmap.y=0;
-    //context.drawImage(img,0,0);
 
     var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 100;
     text1.y = 50;
+    text1.size = 30;
 
     image.onload = () => {
         stage.addChild(bitmap);
@@ -114,6 +115,7 @@ class TextField extends DisplayObject {
     color : string = "";
 
     draw(context2D: CanvasRenderingContext2D) {
+        context2D.font = this.size + "px" + " " + this.font;
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     }
