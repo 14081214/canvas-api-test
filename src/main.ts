@@ -60,29 +60,84 @@ window.onload = () => {
     image.src="mark.png"
     var bitmap = new Bitmap();
     bitmap.image = image;
-    bitmap.y=0;
+    bitmap.y = 40;
+    bitmap.x = 50;
+    bitmap.relatalpha = 0.2;
 
     var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 100;
     text1.y = 50;
-    text1.size = 30;
+    text1.size = 100;
+    //text1.relatalpha = 0.2;
+    //stage.globalAlpha = 1;
+    //context.globalAlpha = 1;
+
+    var text2 = new TextField();
+    text2.text = "helloworld!";
+    text2.x = 100;
+    text2.y = 10;
+    text2.size = 100;
+    text2.relatalpha = 1;
 
     image.onload = () => {
         stage.addChild(bitmap);
         stage.addChild(text1);
+        stage.addChild(text2);
     }
 };
 
 interface Drawable {
     draw(context2D: CanvasRenderingContext2D);
+    remove();
 }
 
-class DisplayObjectContainer implements Drawable {
+class DisplayObject implements Drawable {
+    matrix: math.Matrix = null;
+    globalMatrix: math.Matrix = null;
+
+    x: number = 0;
+    y: number = 0;
+    scaleX: number = 1;
+    scaleY: number = 1;
+    rotation: number = 0;
+    relatalpha: number = 1;
+    globalAlpha: number = 1;                           
+    parent: DisplayObject = null;
+    remove(){};
+
+    constructor() {
+        this.matrix = new math.Matrix();
+        this.globalMatrix = new math.Matrix();
+    }
+
+    draw(context2D: CanvasRenderingContext2D) {
+        this.matrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
+        if (this.parent) {
+            this.globalAlpha = this.parent.globalAlpha * this.relatalpha;
+            this.globalMatrix = math.matrixAppendMatrix(this.matrix, this.parent.globalMatrix);
+        } 
+        if(this.parent == null){
+            this.globalAlpha = this.relatalpha;
+            this.globalMatrix = this.matrix;
+        }
+
+        context2D.globalAlpha = this.globalAlpha;
+        context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
+        this.render(context2D);
+    }
+    render(context2D: CanvasRenderingContext2D) {
+
+    }
+}
+
+class DisplayObjectContainer extends DisplayObject {
     array: Drawable[] = [];
 
     addChild(displayObject: DisplayObject) {
+        this.removeChild(displayObject);
         this.array.push(displayObject);
+        displayObject.parent = this;
     }
 
     draw(context2D: CanvasRenderingContext2D) {
@@ -90,20 +145,25 @@ class DisplayObjectContainer implements Drawable {
             drawable.draw(context2D);
         }
     }
-}
 
-class DisplayObject implements Drawable {
-    x: number = 0;
-    y: number = 0;
-
-    draw(context2D: CanvasRenderingContext2D) {
+    removeChild(child:Drawable) {
+        var tempArrlist=this.array.concat();
+        for (let each of tempArrlist){
+            if(each==child){
+                var index=this.array.indexOf(child);
+                tempArrlist.splice(index,1);
+                this.array=tempArrlist;
+                child.remove();
+                break;
+            }
+        }
     }
 }
 
 class Bitmap extends DisplayObject {
     image: HTMLImageElement;
 
-    draw(context2D: CanvasRenderingContext2D) {
+    render(context2D: CanvasRenderingContext2D) {
         context2D.drawImage(this.image, this.x, this.y);
     }
 }
@@ -115,7 +175,7 @@ class TextField extends DisplayObject {
     color : string = "";
 
     draw(context2D: CanvasRenderingContext2D) {
-        context2D.font = this.size + "px" + " " + this.font;
+        //context2D.font = this.size + "px" + " " + this.font;
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     }

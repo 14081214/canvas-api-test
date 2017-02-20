@@ -55,23 +55,74 @@ window.onload = function () {
     image.src = "mark.png";
     var bitmap = new Bitmap();
     bitmap.image = image;
-    bitmap.y = 0;
+    bitmap.y = 40;
+    bitmap.x = 50;
+    bitmap.relatalpha = 0.2;
     var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 100;
     text1.y = 50;
-    text1.size = 30;
+    text1.size = 100;
+    //text1.relatalpha = 0.2;
+    //stage.globalAlpha = 1;
+    //context.globalAlpha = 1;
+    var text2 = new TextField();
+    text2.text = "helloworld!";
+    text2.x = 100;
+    text2.y = 10;
+    text2.size = 100;
+    text2.relatalpha = 1;
     image.onload = function () {
         stage.addChild(bitmap);
         stage.addChild(text1);
+        stage.addChild(text2);
     };
 };
-var DisplayObjectContainer = (function () {
+var DisplayObject = (function () {
+    function DisplayObject() {
+        this.matrix = null;
+        this.globalMatrix = null;
+        this.x = 0;
+        this.y = 0;
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.rotation = 0;
+        this.relatalpha = 1;
+        this.globalAlpha = 1;
+        this.parent = null;
+        this.matrix = new math.Matrix();
+        this.globalMatrix = new math.Matrix();
+    }
+    DisplayObject.prototype.remove = function () { };
+    ;
+    DisplayObject.prototype.draw = function (context2D) {
+        this.matrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
+        if (this.parent) {
+            this.globalAlpha = this.parent.globalAlpha * this.relatalpha;
+            this.globalMatrix = math.matrixAppendMatrix(this.matrix, this.parent.globalMatrix);
+        }
+        if (this.parent == null) {
+            this.globalAlpha = this.relatalpha;
+            this.globalMatrix = this.matrix;
+        }
+        context2D.globalAlpha = this.globalAlpha;
+        context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
+        this.render(context2D);
+    };
+    DisplayObject.prototype.render = function (context2D) {
+    };
+    return DisplayObject;
+}());
+var DisplayObjectContainer = (function (_super) {
+    __extends(DisplayObjectContainer, _super);
     function DisplayObjectContainer() {
+        _super.apply(this, arguments);
         this.array = [];
     }
     DisplayObjectContainer.prototype.addChild = function (displayObject) {
+        this.removeChild(displayObject);
         this.array.push(displayObject);
+        displayObject.parent = this;
     };
     DisplayObjectContainer.prototype.draw = function (context2D) {
         for (var _i = 0, _a = this.array; _i < _a.length; _i++) {
@@ -79,23 +130,27 @@ var DisplayObjectContainer = (function () {
             drawable.draw(context2D);
         }
     };
-    return DisplayObjectContainer;
-}());
-var DisplayObject = (function () {
-    function DisplayObject() {
-        this.x = 0;
-        this.y = 0;
-    }
-    DisplayObject.prototype.draw = function (context2D) {
+    DisplayObjectContainer.prototype.removeChild = function (child) {
+        var tempArrlist = this.array.concat();
+        for (var _i = 0, tempArrlist_1 = tempArrlist; _i < tempArrlist_1.length; _i++) {
+            var each = tempArrlist_1[_i];
+            if (each == child) {
+                var index = this.array.indexOf(child);
+                tempArrlist.splice(index, 1);
+                this.array = tempArrlist;
+                child.remove();
+                break;
+            }
+        }
     };
-    return DisplayObject;
-}());
+    return DisplayObjectContainer;
+}(DisplayObject));
 var Bitmap = (function (_super) {
     __extends(Bitmap, _super);
     function Bitmap() {
         _super.apply(this, arguments);
     }
-    Bitmap.prototype.draw = function (context2D) {
+    Bitmap.prototype.render = function (context2D) {
         context2D.drawImage(this.image, this.x, this.y);
     };
     return Bitmap;
@@ -109,7 +164,7 @@ var TextField = (function (_super) {
         this.color = "";
     }
     TextField.prototype.draw = function (context2D) {
-        context2D.font = this.size + "px" + " " + this.font;
+        //context2D.font = this.size + "px" + " " + this.font;
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     };
