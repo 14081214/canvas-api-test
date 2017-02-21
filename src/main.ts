@@ -58,11 +58,13 @@ window.onload = () => {
 
     var image = document.createElement("img");
     image.src="mark.png"
+    
     var bitmap = new Bitmap();
     bitmap.image = image;
     bitmap.y = 30;
     bitmap.x = 30;
     bitmap.relatalpha = 0.2;
+
     var bitmap2 = new Bitmap();
     bitmap2.image = image;
     bitmap2.y = 30;
