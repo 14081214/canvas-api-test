@@ -55,27 +55,31 @@ window.onload = function () {
     image.src = "mark.png";
     var bitmap = new Bitmap();
     bitmap.image = image;
-    bitmap.y = 40;
-    bitmap.x = 50;
+    bitmap.y = 30;
+    bitmap.x = 30;
     bitmap.relatalpha = 0.2;
+    var bitmap2 = new Bitmap();
+    bitmap2.image = image;
+    bitmap2.y = 30;
+    bitmap2.x = 60;
+    bitmap2.relatalpha = 1;
     var text1 = new TextField();
     text1.text = "hello!";
-    text1.x = 100;
-    text1.y = 50;
-    text1.size = 100;
-    //text1.relatalpha = 0.2;
-    //stage.globalAlpha = 1;
-    //context.globalAlpha = 1;
+    text1.x = 40;
+    text1.y = 70;
+    text1.size = 20;
+    text1.relatalpha = 0.5;
     var text2 = new TextField();
     text2.text = "helloworld!";
-    text2.x = 100;
-    text2.y = 10;
-    text2.size = 100;
-    text2.relatalpha = 1;
+    text2.x = 35;
+    text2.y = 65;
+    text2.size = 50;
+    //text2.relatalpha = 1;
     image.onload = function () {
-        stage.addChild(bitmap);
         stage.addChild(text1);
         stage.addChild(text2);
+        stage.addChild(bitmap);
+        stage.addChild(bitmap2);
     };
 };
 var DisplayObject = (function () {
@@ -163,8 +167,7 @@ var TextField = (function (_super) {
         this.size = 0;
         this.color = "";
     }
-    TextField.prototype.draw = function (context2D) {
-        //context2D.font = this.size + "px" + " " + this.font;
+    TextField.prototype.render = function (context2D) {
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     };
