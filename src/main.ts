@@ -1,26 +1,3 @@
-class Greeter {
-    element: HTMLElement;
-    span: HTMLElement;
-    timerToken: number;
-
-    constructor(element: HTMLElement) {
-        this.element = element;
-        this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
-        this.span.innerText = new Date().toUTCString();
-    }
-
-    start() {
-        this.timerToken = setInterval(() => this.span.innerHTML = new Date().toUTCString(), 500);
-    }
-
-    stop() {
-        clearTimeout(this.timerToken);
-    }
-
-}
-
 enum TouchEventsType{
     MOUSEDOWN = 0,
     MOUSEUP = 1,
@@ -45,57 +22,91 @@ class TouchEvents {
     }
 }
 
-window.onload = () => {
-    var el = document.getElementById('content');
-    var greeter = new Greeter(el);
-    greeter.start();
+class TouchEventService{
+    private static instance;
+    private performerList : DisplayObject[] = [];
+    static currentType : TouchEventsType;
+    static stageX = -1;
+    static stageY = -1;
+    static getInstance() : TouchEventService{
+        if(TouchEventService.instance == null){
+            TouchEventService.instance = new TouchEventService();
+        }
+        return this.instance;
+    }
 
+    addPerformer(performer : DisplayObject){
+        this.performerList.push(performer);
+    }
+
+    clearList(){
+        this.performerList.splice(0,this.performerList.length);
+    }
+
+    toDo(){
+        for(var i = 0;i <= this.performerList.length - 1;i++){
+            for(var listner of this.performerList[i].listeners){
+                if(listner.type == TouchEventService.currentType){
+                    if(listner.capture){
+                        listner.func();
+                        continue;
+                    }
+                }
+            }
+        }
+
+        for(var i = this.performerList.length - 1;i >= 0;i--){
+            for(var listner of this.performerList[i].listeners){
+                if(listner.type == TouchEventService.currentType){
+                    if(!listner.capture){
+                        listner.func();
+                        continue;
+                    }
+                }
+            }
+        }
+        this.clearList();
+    }
+}
+
+window.onload = () => {
     var canvas=document.getElementById("myCanvas") as HTMLCanvasElement;
     var context=canvas.getContext("2d");
-    //context.fillStyle="#FF0000";
-    //context.fillRect(0,0,250,75);
-    /*var grd=context.createLinearGradient(0,0,175,50);
-    grd.addColorStop(0,"#FF0000");
-    grd.addColorStop(1,"#00FF00");
-    context.fillStyle=grd;
-    context.fillRect(0,0,175,50);
-
-    var line=canvas.getContext("2d");
-    line.moveTo(10,10);
-    line.lineTo(150,50);
-    line.lineTo(10,50);
-    line.stroke();
-
-    var circle=canvas.getContext("2d");
-    circle.fillStyle="#000000";
-    circle.beginPath();
-    circle.arc(70,18,15,0,Math.PI*2,true);
-    circle.closePath();
-    circle.fill();*/
     
     var stage = new DisplayObjectContainer();
+    var container = new DisplayObjectContainer();
     
+    var curTarget;
+    var staTarget;
+    var isMouseDown = false;
+    var staPoint = new math.Point(-1,-1);
+    var movingPoint = new math.Point(0,0);
+
     setInterval(() => {
+        context.save();
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
+        context.restore();
     }, 50)
 
     var image = document.createElement("img");
     image.src="mark.png"
+    var image2 = document.createElement("img");
+    image2.src="sf.jpg"
     
-    var bitmap = new Bitmap();
-    bitmap.image = image;
-    bitmap.y = 30;
-    bitmap.x = 30;
-    bitmap.relatalpha = 0.2;
+    var list = new Bitmap();
+    list.image = image;
+    list.y = 30;
+    list.x = 30;
+    //list.relatalpha = 0.2;
 
-    var bitmap2 = new Bitmap();
-    bitmap2.image = image;
-    bitmap2.y = 30;
-    bitmap2.x = 60;
-    bitmap2.relatalpha = 1;
+    var button = new Bitmap();
+    button.image = image2;
+    button.y = 30;
+    button.x = 100;
+    button.relatalpha = 1;
 
-    var text1 = new TextField();
+    /*var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 40;
     text1.y = 70;
@@ -106,19 +117,86 @@ window.onload = () => {
     text2.text = "helloworld!";
     text2.x = 35;
     text2.y = 65;
-    text2.size = 50;
-    //text2.relatalpha = 1;
+    text2.size = 50;*/
 
     image.onload = () => {
-        stage.addChild(text1);
-        stage.addChild(text2);
-        stage.addChild(bitmap);
-        stage.addChild(bitmap2);
+        //stage.addChild(text1);
+        //stage.addChild(text2);
+        stage.addChild(container);
+        container.addChild(list);
+        container.addChild(button);
+    }
+
+    stage.addEventListener(TouchEventsType.MOUSEDOWN,()=>{
+
+    },this)
+
+    container.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
+
+    },this)
+
+    list.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
+        if(curTarget == staTarget){
+        container.x += (TouchEventService.stageX - movingPoint.x);
+        container.y += (TouchEventService.stageY - movingPoint.y);
+        }
+    },this);
+
+    button.addEventListener(TouchEventsType.CLICK,()=>{
+        alert("You have click!");
+    },this);
+
+    window.onmousedown = (e) =>{
+        let x = e.offsetX;
+        let y = e.offsetY;
+        TouchEventService.stageX = x;
+        TouchEventService.stageY = y;
+        staPoint.x = x;
+        staPoint.y = y;
+        movingPoint.x = x;
+        movingPoint.y = y;
+        TouchEventService.currentType = TouchEventsType.MOUSEDOWN;
+        curTarget = stage.hitTest(x,y);
+        staTarget = curTarget;
+        TouchEventService.getInstance().toDo();
+        isMouseDown = true;
+    }
+
+    window.onmouseup = (e) =>{
+        let x = e.offsetX;
+        let y = e.offsetY;
+        TouchEventService.stageX = x;
+        TouchEventService.stageY = y;
+        var target = stage.hitTest(x,y);
+        if(target == curTarget){
+            TouchEventService.currentType = TouchEventsType.CLICK;
+        }
+        else{
+            TouchEventService.currentType = TouchEventsType.MOUSEUP
+        }
+        TouchEventService.getInstance().toDo();
+
+        curTarget = null;
+        isMouseDown = false;
+    }
+
+    window.onmousemove = (e) =>{
+        if(isMouseDown){
+            let x = e.offsetX;
+            let y = e.offsetY;
+            TouchEventService.stageX = x;
+            TouchEventService.stageY = y;
+            TouchEventService.currentType = TouchEventsType.MOUSEMOVE;
+            curTarget = stage.hitTest(x,y);
+            TouchEventService.getInstance().toDo();
+            movingPoint.x = x;
+            movingPoint.y = y;
+        }
     }
 };
 
 interface Drawable {
-    draw(context2D: CanvasRenderingContext2D);
+    render(context2D: CanvasRenderingContext2D);
     remove();
 }
 
@@ -164,7 +242,7 @@ abstract class DisplayObject implements Drawable {
         this.listeners.push(touchEvent);
       }
     abstract render(context2D: CanvasRenderingContext2D);
-    abstract hitTest(x: number, y: number,type: TouchEventsType): DisplayObject;
+    abstract hitTest(x: number, y: number): DisplayObject;
 }
 
 class DisplayObjectContainer extends DisplayObject {
@@ -177,8 +255,8 @@ class DisplayObjectContainer extends DisplayObject {
     }
 
     render(context2D: CanvasRenderingContext2D) {
-        for (let drawable of this.array) {
-            drawable.draw(context2D);
+        for (let displayObject of this.array) {
+            displayObject.draw(context2D);
         }
     }
 
@@ -195,11 +273,11 @@ class DisplayObjectContainer extends DisplayObject {
         }
     }
 
-    hitTest(x: number, y: number,type: TouchEventsType) {
+    hitTest(x: number, y: number) {
         for (let i = this.array.length - 1; i >= 0; i--) {
             var child = this.array[i];
             var pointBaseOnChild = math.pointAppendMatrix(new math.Point(x, y), math.invertMatrix(child.matrix));
-            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y,type);
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
             if (hitTestResult) {
                 return hitTestResult;
             }
@@ -215,7 +293,7 @@ class Bitmap extends DisplayObject {
         context2D.drawImage(this.image, this.x, this.y);
     }
 
-    hitTest(x: number, y: number,type: TouchEventsType) {
+    hitTest(x: number, y: number) {
         var rect = new math.Rectangle();
         var point = new math.Point(x,y);
         rect.x = 0;
@@ -224,6 +302,7 @@ class Bitmap extends DisplayObject {
         rect.height = this.image.height;
 
         if (rect.isPointInRectangle(point)) {
+            TouchEventService.getInstance().addPerformer(this);
             return this;
         } else {
             return null;
@@ -241,7 +320,7 @@ class TextField extends DisplayObject {
         context2D.fillText(this.text, this.x, this.y);
     }
 
-    hitTest(x : number,y :number,type: TouchEventsType){
+    hitTest(x : number,y :number){
         var rect = new math.Rectangle();
         var point = new math.Point(x, y);
         rect.x = 0;
@@ -250,6 +329,7 @@ class TextField extends DisplayObject {
         rect.height = this.size;
         
         if(rect.isPointInRectangle(point)){
+            TouchEventService.getInstance().addPerformer(this);
             return this;
         }
         else{

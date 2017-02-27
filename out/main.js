@@ -3,23 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Greeter = (function () {
-    function Greeter(element) {
-        this.element = element;
-        this.element.innerHTML += "The time is: ";
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
-        this.span.innerText = new Date().toUTCString();
-    }
-    Greeter.prototype.start = function () {
-        var _this = this;
-        this.timerToken = setInterval(function () { return _this.span.innerHTML = new Date().toUTCString(); }, 500);
-    };
-    Greeter.prototype.stop = function () {
-        clearTimeout(this.timerToken);
-    };
-    return Greeter;
-}());
+var _this = this;
 var TouchEventsType;
 (function (TouchEventsType) {
     TouchEventsType[TouchEventsType["MOUSEDOWN"] = 0] = "MOUSEDOWN";
@@ -39,66 +23,156 @@ var TouchEvents = (function () {
     }
     return TouchEvents;
 }());
+var TouchEventService = (function () {
+    function TouchEventService() {
+        this.performerList = [];
+    }
+    TouchEventService.getInstance = function () {
+        if (TouchEventService.instance == null) {
+            TouchEventService.instance = new TouchEventService();
+        }
+        return this.instance;
+    };
+    TouchEventService.prototype.addPerformer = function (performer) {
+        this.performerList.push(performer);
+    };
+    TouchEventService.prototype.clearList = function () {
+        this.performerList.splice(0, this.performerList.length);
+    };
+    TouchEventService.prototype.toDo = function () {
+        for (var i = 0; i <= this.performerList.length - 1; i++) {
+            for (var _i = 0, _a = this.performerList[i].listeners; _i < _a.length; _i++) {
+                var listner = _a[_i];
+                if (listner.type == TouchEventService.currentType) {
+                    if (listner.capture) {
+                        listner.func();
+                        continue;
+                    }
+                }
+            }
+        }
+        for (var i = this.performerList.length - 1; i >= 0; i--) {
+            for (var _b = 0, _c = this.performerList[i].listeners; _b < _c.length; _b++) {
+                var listner = _c[_b];
+                if (listner.type == TouchEventService.currentType) {
+                    if (!listner.capture) {
+                        listner.func();
+                        continue;
+                    }
+                }
+            }
+        }
+        this.clearList();
+    };
+    TouchEventService.stageX = -1;
+    TouchEventService.stageY = -1;
+    return TouchEventService;
+}());
 window.onload = function () {
-    var el = document.getElementById('content');
-    var greeter = new Greeter(el);
-    greeter.start();
     var canvas = document.getElementById("myCanvas");
     var context = canvas.getContext("2d");
-    //context.fillStyle="#FF0000";
-    //context.fillRect(0,0,250,75);
-    /*var grd=context.createLinearGradient(0,0,175,50);
-    grd.addColorStop(0,"#FF0000");
-    grd.addColorStop(1,"#00FF00");
-    context.fillStyle=grd;
-    context.fillRect(0,0,175,50);
-
-    var line=canvas.getContext("2d");
-    line.moveTo(10,10);
-    line.lineTo(150,50);
-    line.lineTo(10,50);
-    line.stroke();
-
-    var circle=canvas.getContext("2d");
-    circle.fillStyle="#000000";
-    circle.beginPath();
-    circle.arc(70,18,15,0,Math.PI*2,true);
-    circle.closePath();
-    circle.fill();*/
     var stage = new DisplayObjectContainer();
+    var container = new DisplayObjectContainer();
+    var curTarget;
+    var staTarget;
+    var isMouseDown = false;
+    var staPoint = new math.Point(-1, -1);
+    var movingPoint = new math.Point(0, 0);
     setInterval(function () {
+        context.save();
         context.clearRect(0, 0, canvas.width, canvas.height);
         stage.draw(context);
+        context.restore();
     }, 50);
     var image = document.createElement("img");
     image.src = "mark.png";
-    var bitmap = new Bitmap();
-    bitmap.image = image;
-    bitmap.y = 30;
-    bitmap.x = 30;
-    bitmap.relatalpha = 0.2;
-    var bitmap2 = new Bitmap();
-    bitmap2.image = image;
-    bitmap2.y = 30;
-    bitmap2.x = 60;
-    bitmap2.relatalpha = 1;
-    var text1 = new TextField();
+    var image2 = document.createElement("img");
+    image2.src = "sf.jpg";
+    var list = new Bitmap();
+    list.image = image;
+    list.y = 30;
+    list.x = 30;
+    //list.relatalpha = 0.2;
+    var button = new Bitmap();
+    button.image = image2;
+    button.y = 30;
+    button.x = 100;
+    button.relatalpha = 1;
+    /*var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 40;
     text1.y = 70;
     text1.size = 20;
     text1.relatalpha = 0.5;
+
     var text2 = new TextField();
     text2.text = "helloworld!";
     text2.x = 35;
     text2.y = 65;
-    text2.size = 50;
-    //text2.relatalpha = 1;
+    text2.size = 50;*/
     image.onload = function () {
-        stage.addChild(text1);
-        stage.addChild(text2);
-        stage.addChild(bitmap);
-        stage.addChild(bitmap2);
+        //stage.addChild(text1);
+        //stage.addChild(text2);
+        stage.addChild(container);
+        container.addChild(list);
+        container.addChild(button);
+    };
+    stage.addEventListener(TouchEventsType.MOUSEDOWN, function () {
+    }, _this);
+    container.addEventListener(TouchEventsType.MOUSEMOVE, function () {
+    }, _this);
+    list.addEventListener(TouchEventsType.MOUSEMOVE, function () {
+        if (curTarget == staTarget) {
+            container.x += (TouchEventService.stageX - movingPoint.x);
+            container.y += (TouchEventService.stageY - movingPoint.y);
+        }
+    }, _this);
+    button.addEventListener(TouchEventsType.CLICK, function () {
+        alert("You have click!");
+    }, _this);
+    window.onmousedown = function (e) {
+        var x = e.offsetX;
+        var y = e.offsetY;
+        TouchEventService.stageX = x;
+        TouchEventService.stageY = y;
+        staPoint.x = x;
+        staPoint.y = y;
+        movingPoint.x = x;
+        movingPoint.y = y;
+        TouchEventService.currentType = TouchEventsType.MOUSEDOWN;
+        curTarget = stage.hitTest(x, y);
+        staTarget = curTarget;
+        TouchEventService.getInstance().toDo();
+        isMouseDown = true;
+    };
+    window.onmouseup = function (e) {
+        var x = e.offsetX;
+        var y = e.offsetY;
+        TouchEventService.stageX = x;
+        TouchEventService.stageY = y;
+        var target = stage.hitTest(x, y);
+        if (target == curTarget) {
+            TouchEventService.currentType = TouchEventsType.CLICK;
+        }
+        else {
+            TouchEventService.currentType = TouchEventsType.MOUSEUP;
+        }
+        TouchEventService.getInstance().toDo();
+        curTarget = null;
+        isMouseDown = false;
+    };
+    window.onmousemove = function (e) {
+        if (isMouseDown) {
+            var x = e.offsetX;
+            var y = e.offsetY;
+            TouchEventService.stageX = x;
+            TouchEventService.stageY = y;
+            TouchEventService.currentType = TouchEventsType.MOUSEMOVE;
+            curTarget = stage.hitTest(x, y);
+            TouchEventService.getInstance().toDo();
+            movingPoint.x = x;
+            movingPoint.y = y;
+        }
     };
 };
 var DisplayObject = (function () {
@@ -152,8 +226,8 @@ var DisplayObjectContainer = (function (_super) {
     };
     DisplayObjectContainer.prototype.render = function (context2D) {
         for (var _i = 0, _a = this.array; _i < _a.length; _i++) {
-            var drawable = _a[_i];
-            drawable.draw(context2D);
+            var displayObject = _a[_i];
+            displayObject.draw(context2D);
         }
     };
     DisplayObjectContainer.prototype.removeChild = function (child) {
@@ -169,11 +243,11 @@ var DisplayObjectContainer = (function (_super) {
             }
         }
     };
-    DisplayObjectContainer.prototype.hitTest = function (x, y, type) {
+    DisplayObjectContainer.prototype.hitTest = function (x, y) {
         for (var i = this.array.length - 1; i >= 0; i--) {
             var child = this.array[i];
             var pointBaseOnChild = math.pointAppendMatrix(new math.Point(x, y), math.invertMatrix(child.matrix));
-            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y, type);
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
             if (hitTestResult) {
                 return hitTestResult;
             }
@@ -190,7 +264,7 @@ var Bitmap = (function (_super) {
     Bitmap.prototype.render = function (context2D) {
         context2D.drawImage(this.image, this.x, this.y);
     };
-    Bitmap.prototype.hitTest = function (x, y, type) {
+    Bitmap.prototype.hitTest = function (x, y) {
         var rect = new math.Rectangle();
         var point = new math.Point(x, y);
         rect.x = 0;
@@ -198,6 +272,7 @@ var Bitmap = (function (_super) {
         rect.width = this.image.width;
         rect.height = this.image.height;
         if (rect.isPointInRectangle(point)) {
+            TouchEventService.getInstance().addPerformer(this);
             return this;
         }
         else {
@@ -218,7 +293,7 @@ var TextField = (function (_super) {
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     };
-    TextField.prototype.hitTest = function (x, y, type) {
+    TextField.prototype.hitTest = function (x, y) {
         var rect = new math.Rectangle();
         var point = new math.Point(x, y);
         rect.x = 0;
@@ -226,6 +301,7 @@ var TextField = (function (_super) {
         rect.width = this.size * this.text.length;
         rect.height = this.size;
         if (rect.isPointInRectangle(point)) {
+            TouchEventService.getInstance().addPerformer(this);
             return this;
         }
         else {

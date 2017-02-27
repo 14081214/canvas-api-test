@@ -16,7 +16,7 @@ module math {
         width : number = 1;
         height : number = 1;
             
-        isPointInRectangle(point : Point){
+        isPointInRectangle(point: Point){
             var rect = this;
             if(point.x < rect.x + rect.width && 
                point.x > rect.x && 
