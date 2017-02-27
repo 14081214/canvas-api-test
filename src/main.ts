@@ -21,6 +21,30 @@ class Greeter {
 
 }
 
+enum TouchEventsType{
+    MOUSEDOWN = 0,
+    MOUSEUP = 1,
+    CLICK = 2,
+    MOUSEMOVE = 3
+}
+
+class TouchEvents {
+    type: TouchEventsType;
+    func: Function;
+    obj: any;
+    capture = false;
+    priority = 0;
+
+
+    constructor(type: TouchEventsType, func: Function, obj: any, capture?: boolean, priority?: number) {
+        this.type = type;
+        this.func = func;
+        this.obj = obj;
+        this.capture = capture || false;
+        this.priority = priority || 0;
+    }
+}
+
 window.onload = () => {
     var el = document.getElementById('content');
     var greeter = new Greeter(el);
@@ -110,6 +134,8 @@ abstract class DisplayObject implements Drawable {
     relatalpha: number = 1;
     globalAlpha: number = 1;                           
     parent: DisplayObject = null;
+
+    listeners: TouchEvents[] = [];
     remove(){};
 
     constructor() {
@@ -132,8 +158,13 @@ abstract class DisplayObject implements Drawable {
         context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         this.render(context2D);
     }
+
+    addEventListener(type : TouchEventsType,touchFunction : Function,object : any,ifCapture? : boolean,priority?: number){
+        var touchEvent = new TouchEvents(type,touchFunction,object,ifCapture,priority);
+        this.listeners.push(touchEvent);
+      }
     abstract render(context2D: CanvasRenderingContext2D);
-    abstract hitTest(x: number, y: number): DisplayObject;
+    abstract hitTest(x: number, y: number,type: TouchEventsType): DisplayObject;
 }
 
 class DisplayObjectContainer extends DisplayObject {
@@ -164,11 +195,11 @@ class DisplayObjectContainer extends DisplayObject {
         }
     }
 
-    hitTest(x: number, y: number) {
+    hitTest(x: number, y: number,type: TouchEventsType) {
         for (let i = this.array.length - 1; i >= 0; i--) {
             var child = this.array[i];
             var pointBaseOnChild = math.pointAppendMatrix(new math.Point(x, y), math.invertMatrix(child.matrix));
-            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y,type);
             if (hitTestResult) {
                 return hitTestResult;
             }
@@ -184,7 +215,7 @@ class Bitmap extends DisplayObject {
         context2D.drawImage(this.image, this.x, this.y);
     }
 
-    hitTest(x: number, y: number) {
+    hitTest(x: number, y: number,type: TouchEventsType) {
         var rect = new math.Rectangle();
         var point = new math.Point(x,y);
         rect.x = 0;
@@ -210,7 +241,7 @@ class TextField extends DisplayObject {
         context2D.fillText(this.text, this.x, this.y);
     }
 
-    hitTest(x : number,y :number){
+    hitTest(x : number,y :number,type: TouchEventsType){
         var rect = new math.Rectangle();
         var point = new math.Point(x, y);
         rect.x = 0;

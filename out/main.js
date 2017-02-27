@@ -20,6 +20,25 @@ var Greeter = (function () {
     };
     return Greeter;
 }());
+var TouchEventsType;
+(function (TouchEventsType) {
+    TouchEventsType[TouchEventsType["MOUSEDOWN"] = 0] = "MOUSEDOWN";
+    TouchEventsType[TouchEventsType["MOUSEUP"] = 1] = "MOUSEUP";
+    TouchEventsType[TouchEventsType["CLICK"] = 2] = "CLICK";
+    TouchEventsType[TouchEventsType["MOUSEMOVE"] = 3] = "MOUSEMOVE";
+})(TouchEventsType || (TouchEventsType = {}));
+var TouchEvents = (function () {
+    function TouchEvents(type, func, obj, capture, priority) {
+        this.capture = false;
+        this.priority = 0;
+        this.type = type;
+        this.func = func;
+        this.obj = obj;
+        this.capture = capture || false;
+        this.priority = priority || 0;
+    }
+    return TouchEvents;
+}());
 window.onload = function () {
     var el = document.getElementById('content');
     var greeter = new Greeter(el);
@@ -94,6 +113,7 @@ var DisplayObject = (function () {
         this.relatalpha = 1;
         this.globalAlpha = 1;
         this.parent = null;
+        this.listeners = [];
         this.matrix = new math.Matrix();
         this.globalMatrix = new math.Matrix();
     }
@@ -112,6 +132,10 @@ var DisplayObject = (function () {
         context2D.globalAlpha = this.globalAlpha;
         context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         this.render(context2D);
+    };
+    DisplayObject.prototype.addEventListener = function (type, touchFunction, object, ifCapture, priority) {
+        var touchEvent = new TouchEvents(type, touchFunction, object, ifCapture, priority);
+        this.listeners.push(touchEvent);
     };
     return DisplayObject;
 }());
@@ -145,11 +169,11 @@ var DisplayObjectContainer = (function (_super) {
             }
         }
     };
-    DisplayObjectContainer.prototype.hitTest = function (x, y) {
+    DisplayObjectContainer.prototype.hitTest = function (x, y, type) {
         for (var i = this.array.length - 1; i >= 0; i--) {
             var child = this.array[i];
             var pointBaseOnChild = math.pointAppendMatrix(new math.Point(x, y), math.invertMatrix(child.matrix));
-            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y, type);
             if (hitTestResult) {
                 return hitTestResult;
             }
@@ -166,7 +190,7 @@ var Bitmap = (function (_super) {
     Bitmap.prototype.render = function (context2D) {
         context2D.drawImage(this.image, this.x, this.y);
     };
-    Bitmap.prototype.hitTest = function (x, y) {
+    Bitmap.prototype.hitTest = function (x, y, type) {
         var rect = new math.Rectangle();
         var point = new math.Point(x, y);
         rect.x = 0;
@@ -194,7 +218,7 @@ var TextField = (function (_super) {
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
     };
-    TextField.prototype.hitTest = function (x, y) {
+    TextField.prototype.hitTest = function (x, y, type) {
         var rect = new math.Rectangle();
         var point = new math.Point(x, y);
         rect.x = 0;
