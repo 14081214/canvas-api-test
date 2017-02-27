@@ -98,7 +98,7 @@ interface Drawable {
     remove();
 }
 
-class DisplayObject implements Drawable {
+abstract class DisplayObject implements Drawable {
     matrix: math.Matrix = null;
     globalMatrix: math.Matrix = null;
 
@@ -132,21 +132,20 @@ class DisplayObject implements Drawable {
         context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         this.render(context2D);
     }
-    render(context2D: CanvasRenderingContext2D) {
-
-    }
+    abstract render(context2D: CanvasRenderingContext2D);
+    abstract hitTest(x: number, y: number): DisplayObject;
 }
 
 class DisplayObjectContainer extends DisplayObject {
-    array: Drawable[] = [];
+    array: DisplayObject[] = [];
 
-    addChild(displayObject: DisplayObject) {
-        this.removeChild(displayObject);
-        this.array.push(displayObject);
-        displayObject.parent = this;
+    addChild(child: DisplayObject) {
+        this.removeChild(child);
+        this.array.push(child);
+        child.parent = this;
     }
 
-    draw(context2D: CanvasRenderingContext2D) {
+    render(context2D: CanvasRenderingContext2D) {
         for (let drawable of this.array) {
             drawable.draw(context2D);
         }
@@ -156,13 +155,25 @@ class DisplayObjectContainer extends DisplayObject {
         var tempArrlist=this.array.concat();
         for (let each of tempArrlist){
             if(each==child){
-                var index=this.array.indexOf(child);
+                var index=this.array.indexOf(each);
                 tempArrlist.splice(index,1);
                 this.array=tempArrlist;
                 child.remove();
                 break;
             }
         }
+    }
+
+    hitTest(x: number, y: number) {
+        for (let i = this.array.length - 1; i >= 0; i--) {
+            var child = this.array[i];
+            var pointBaseOnChild = math.pointAppendMatrix(new math.Point(x, y), math.invertMatrix(child.matrix));
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
+            if (hitTestResult) {
+                return hitTestResult;
+            }
+        }
+        return null;
     }
 }
 
@@ -172,16 +183,47 @@ class Bitmap extends DisplayObject {
     render(context2D: CanvasRenderingContext2D) {
         context2D.drawImage(this.image, this.x, this.y);
     }
+
+    hitTest(x: number, y: number) {
+        var rect = new math.Rectangle();
+        var point = new math.Point(x,y);
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = this.image.width;
+        rect.height = this.image.height;
+
+        if (rect.isPointInRectangle(point)) {
+            return this;
+        } else {
+            return null;
+        }
+    }
 }
 
 class TextField extends DisplayObject {
     text : string = "";
-    size : number = 0;
+    size : number = 10;
     color : string = "";
 
     render(context2D: CanvasRenderingContext2D) {
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
+    }
+
+    hitTest(x : number,y :number){
+        var rect = new math.Rectangle();
+        var point = new math.Point(x, y);
+        rect.x = 0;
+        rect.y = 0;
+        rect.width =this.size * this.text.length;
+        rect.height = this.size;
+        
+        if(rect.isPointInRectangle(point)){
+            return this;
+        }
+        else{
+            return null;
+        }
     }
 }
 

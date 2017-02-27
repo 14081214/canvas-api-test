@@ -113,8 +113,6 @@ var DisplayObject = (function () {
         context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
         this.render(context2D);
     };
-    DisplayObject.prototype.render = function (context2D) {
-    };
     return DisplayObject;
 }());
 var DisplayObjectContainer = (function (_super) {
@@ -123,12 +121,12 @@ var DisplayObjectContainer = (function (_super) {
         _super.apply(this, arguments);
         this.array = [];
     }
-    DisplayObjectContainer.prototype.addChild = function (displayObject) {
-        this.removeChild(displayObject);
-        this.array.push(displayObject);
-        displayObject.parent = this;
+    DisplayObjectContainer.prototype.addChild = function (child) {
+        this.removeChild(child);
+        this.array.push(child);
+        child.parent = this;
     };
-    DisplayObjectContainer.prototype.draw = function (context2D) {
+    DisplayObjectContainer.prototype.render = function (context2D) {
         for (var _i = 0, _a = this.array; _i < _a.length; _i++) {
             var drawable = _a[_i];
             drawable.draw(context2D);
@@ -139,13 +137,24 @@ var DisplayObjectContainer = (function (_super) {
         for (var _i = 0, tempArrlist_1 = tempArrlist; _i < tempArrlist_1.length; _i++) {
             var each = tempArrlist_1[_i];
             if (each == child) {
-                var index = this.array.indexOf(child);
+                var index = this.array.indexOf(each);
                 tempArrlist.splice(index, 1);
                 this.array = tempArrlist;
                 child.remove();
                 break;
             }
         }
+    };
+    DisplayObjectContainer.prototype.hitTest = function (x, y) {
+        for (var i = this.array.length - 1; i >= 0; i--) {
+            var child = this.array[i];
+            var pointBaseOnChild = math.pointAppendMatrix(new math.Point(x, y), math.invertMatrix(child.matrix));
+            var hitTestResult = child.hitTest(pointBaseOnChild.x, pointBaseOnChild.y);
+            if (hitTestResult) {
+                return hitTestResult;
+            }
+        }
+        return null;
     };
     return DisplayObjectContainer;
 }(DisplayObject));
@@ -157,6 +166,20 @@ var Bitmap = (function (_super) {
     Bitmap.prototype.render = function (context2D) {
         context2D.drawImage(this.image, this.x, this.y);
     };
+    Bitmap.prototype.hitTest = function (x, y) {
+        var rect = new math.Rectangle();
+        var point = new math.Point(x, y);
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = this.image.width;
+        rect.height = this.image.height;
+        if (rect.isPointInRectangle(point)) {
+            return this;
+        }
+        else {
+            return null;
+        }
+    };
     return Bitmap;
 }(DisplayObject));
 var TextField = (function (_super) {
@@ -164,12 +187,26 @@ var TextField = (function (_super) {
     function TextField() {
         _super.apply(this, arguments);
         this.text = "";
-        this.size = 0;
+        this.size = 10;
         this.color = "";
     }
     TextField.prototype.render = function (context2D) {
         context2D.fillStyle = this.color;
         context2D.fillText(this.text, this.x, this.y);
+    };
+    TextField.prototype.hitTest = function (x, y) {
+        var rect = new math.Rectangle();
+        var point = new math.Point(x, y);
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = this.size * this.text.length;
+        rect.height = this.size;
+        if (rect.isPointInRectangle(point)) {
+            return this;
+        }
+        else {
+            return null;
+        }
     };
     return TextField;
 }(DisplayObject));
