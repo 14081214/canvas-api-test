@@ -76,7 +76,7 @@ window.onload = function () {
     var curTarget;
     var staTarget;
     var isMouseDown = false;
-    var staPoint = new math.Point(-1, -1);
+    var staPoint = new math.Point(0, 0);
     var movingPoint = new math.Point(0, 0);
     setInterval(function () {
         context.save();
@@ -89,13 +89,13 @@ window.onload = function () {
     var image2 = document.createElement("img");
     image2.src = "sf.jpg";
     var list = new Bitmap();
-    list.image = image;
+    list.image = image2;
     list.y = 30;
     list.x = 30;
-    //list.relatalpha = 0.2;
+    list.relatalpha = 1;
     var button = new Bitmap();
-    button.image = image2;
-    button.y = 30;
+    button.image = image;
+    button.y = 32;
     button.x = 100;
     button.relatalpha = 1;
     /*var text1 = new TextField();
@@ -117,18 +117,23 @@ window.onload = function () {
         container.addChild(list);
         container.addChild(button);
     };
-    stage.addEventListener(TouchEventsType.MOUSEDOWN, function () {
-    }, _this);
-    container.addEventListener(TouchEventsType.MOUSEMOVE, function () {
-    }, _this);
+    /*stage.addEventListener(TouchEventsType.MOUSEDOWN,()=>{
+        console.log("stagehhh");
+    },this)
+
+    container.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
+        console.log("container");
+    },this)*/
     list.addEventListener(TouchEventsType.MOUSEMOVE, function () {
         if (curTarget == staTarget) {
             container.x += (TouchEventService.stageX - movingPoint.x);
             container.y += (TouchEventService.stageY - movingPoint.y);
+            console.log("listhhh");
         }
     }, _this);
     button.addEventListener(TouchEventsType.CLICK, function () {
         alert("You have click!");
+        console.log("button");
     }, _this);
     window.onmousedown = function (e) {
         var x = e.offsetX;

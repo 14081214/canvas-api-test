@@ -79,7 +79,7 @@ window.onload = () => {
     var curTarget;
     var staTarget;
     var isMouseDown = false;
-    var staPoint = new math.Point(-1,-1);
+    var staPoint = new math.Point(0,0);
     var movingPoint = new math.Point(0,0);
 
     setInterval(() => {
@@ -95,14 +95,14 @@ window.onload = () => {
     image2.src="sf.jpg"
     
     var list = new Bitmap();
-    list.image = image;
+    list.image = image2;
     list.y = 30;
     list.x = 30;
-    //list.relatalpha = 0.2;
+    list.relatalpha = 1;
 
     var button = new Bitmap();
-    button.image = image2;
-    button.y = 30;
+    button.image = image;
+    button.y = 32;
     button.x = 100;
     button.relatalpha = 1;
 
@@ -122,28 +122,31 @@ window.onload = () => {
     image.onload = () => {
         //stage.addChild(text1);
         //stage.addChild(text2);
+
         stage.addChild(container);
         container.addChild(list);
         container.addChild(button);
     }
 
-    stage.addEventListener(TouchEventsType.MOUSEDOWN,()=>{
-
+    /*stage.addEventListener(TouchEventsType.MOUSEDOWN,()=>{
+        console.log("stagehhh");
     },this)
 
     container.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
-
-    },this)
+        console.log("container");
+    },this)*/
 
     list.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
         if(curTarget == staTarget){
         container.x += (TouchEventService.stageX - movingPoint.x);
         container.y += (TouchEventService.stageY - movingPoint.y);
+        console.log("listhhh");
         }
     },this);
 
     button.addEventListener(TouchEventsType.CLICK,()=>{
         alert("You have click!");
+        console.log("button");
     },this);
 
     window.onmousedown = (e) =>{
@@ -175,7 +178,6 @@ window.onload = () => {
             TouchEventService.currentType = TouchEventsType.MOUSEUP
         }
         TouchEventService.getInstance().toDo();
-
         curTarget = null;
         isMouseDown = false;
     }
