@@ -89,7 +89,7 @@ window.onload = () => {
         context.restore();
     }, 50)
 
-    var image = document.createElement("img");
+    /*var image = document.createElement("img");
     image.src="mark.png"
     var image2 = document.createElement("img");
     image2.src="sf.jpg"
@@ -104,7 +104,7 @@ window.onload = () => {
     button.image = image;
     button.y = 32;
     button.x = 100;
-    button.relatalpha = 1;
+    button.relatalpha = 1;*/
 
     /*var text1 = new TextField();
     text1.text = "hello!";
@@ -119,22 +119,15 @@ window.onload = () => {
     text2.y = 65;
     text2.size = 50;*/
 
-    image.onload = () => {
-        //stage.addChild(text1);
-        //stage.addChild(text2);
+    var list = new Bitmap("sf.jpg");
+    var button = new Bitmap("mark.png");
 
-        stage.addChild(container);
-        container.addChild(list);
-        container.addChild(button);
-    }
+    //stage.addChild(text1);
+    //stage.addChild(text2);
 
-    /*stage.addEventListener(TouchEventsType.MOUSEDOWN,()=>{
-        console.log("stagehhh");
-    },this)
-
-    container.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
-        console.log("container");
-    },this)*/
+    stage.addChild(container);
+    container.addChild(list);
+    container.addChild(button);
 
     list.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
         if(curTarget == staTarget){
@@ -289,7 +282,15 @@ class DisplayObjectContainer extends DisplayObject {
 }
 
 class Bitmap extends DisplayObject {
+    imgID = "";
     image: HTMLImageElement;
+
+    constructor(id : string){
+        super();
+        this.imgID = id;
+        this.image = new Image();
+        this.image.src = this.imgID;
+    }
 
     render(context2D: CanvasRenderingContext2D) {
         context2D.drawImage(this.image, this.x, this.y);

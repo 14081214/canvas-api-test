@@ -84,20 +84,22 @@ window.onload = function () {
         stage.draw(context);
         context.restore();
     }, 50);
-    var image = document.createElement("img");
-    image.src = "mark.png";
+    /*var image = document.createElement("img");
+    image.src="mark.png"
     var image2 = document.createElement("img");
-    image2.src = "sf.jpg";
+    image2.src="sf.jpg"
+    
     var list = new Bitmap();
     list.image = image2;
     list.y = 30;
     list.x = 30;
     list.relatalpha = 1;
+
     var button = new Bitmap();
     button.image = image;
     button.y = 32;
     button.x = 100;
-    button.relatalpha = 1;
+    button.relatalpha = 1;*/
     /*var text1 = new TextField();
     text1.text = "hello!";
     text1.x = 40;
@@ -110,20 +112,13 @@ window.onload = function () {
     text2.x = 35;
     text2.y = 65;
     text2.size = 50;*/
-    image.onload = function () {
-        //stage.addChild(text1);
-        //stage.addChild(text2);
-        stage.addChild(container);
-        container.addChild(list);
-        container.addChild(button);
-    };
-    /*stage.addEventListener(TouchEventsType.MOUSEDOWN,()=>{
-        console.log("stagehhh");
-    },this)
-
-    container.addEventListener(TouchEventsType.MOUSEMOVE,()=>{
-        console.log("container");
-    },this)*/
+    var list = new Bitmap("sf.jpg");
+    var button = new Bitmap("mark.png");
+    //stage.addChild(text1);
+    //stage.addChild(text2);
+    stage.addChild(container);
+    container.addChild(list);
+    container.addChild(button);
     list.addEventListener(TouchEventsType.MOUSEMOVE, function () {
         if (curTarget == staTarget) {
             container.x += (TouchEventService.stageX - movingPoint.x);
@@ -263,8 +258,12 @@ var DisplayObjectContainer = (function (_super) {
 }(DisplayObject));
 var Bitmap = (function (_super) {
     __extends(Bitmap, _super);
-    function Bitmap() {
-        _super.apply(this, arguments);
+    function Bitmap(id) {
+        _super.call(this);
+        this.imgID = "";
+        this.imgID = id;
+        this.image = new Image();
+        this.image.src = this.imgID;
     }
     Bitmap.prototype.render = function (context2D) {
         context2D.drawImage(this.image, this.x, this.y);
