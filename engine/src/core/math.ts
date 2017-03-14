@@ -1,5 +1,4 @@
-module math {
-
+namespace engine {
 
     export class Point {
         x: number;
@@ -9,26 +8,27 @@ module math {
             this.y = y;
         }
     }
-    
-    export class Rectangle{
-        x : number = 0;
-        y : number = 0;
-        width : number = 1;
-        height : number = 1;
-            
-        isPointInRectangle(point: Point){
+
+    export class Rectangle {
+
+        x = 0;
+        y = 0;
+        width = 1;
+        height = 1;
+        isPointInRectangle(x : number,y:number) {
+            var point = new Point(x,y);
             var rect = this;
-            if(point.x < rect.x + rect.width && 
-               point.x > rect.x && 
-               point.y < rect.height + rect.y && 
+            if(point.x < rect.x + rect.width &&
+               point.x > rect.x &&
+               point.y < rect.y + rect.height &&
                point.y > rect.y){
                    return true;
-                }else{
-                    return false;
-                }
+               }
+               else{
+                   return false;
+               }
         }
     }
-
 
     export function pointAppendMatrix(point: Point, m: Matrix): Point {
         var x = m.a * point.x + m.c * point.y + m.tx;
@@ -41,7 +41,6 @@ module math {
      * 使用伴随矩阵法求逆矩阵
      * http://wenku.baidu.com/view/b0a9fed8ce2f0066f53322a9
      */
-
     export function invertMatrix(m: Matrix): Matrix {
 
 
